@@ -18,7 +18,7 @@ import {
 import type { RoomCode, PlayerId } from "@twosome/shared";
 import { LogoMark } from "@/components/ui/logo-mark";
 import { PlayerCard } from "@/components/room/player-card";
-import { RoomCodeDisplay } from "@/components/room/room-code-display";
+import { RoomShare } from "@/components/room/room-share";
 import { playPlayerJoined, playGameStart } from "@/hooks/use-sounds";
 import { LoadingIndicator } from "@/components/ui/animated-logo";
 
@@ -49,7 +49,6 @@ export function Room() {
   const [isJoining, setIsJoining] = useState(false);
   const [isLoadingRoom, setIsLoadingRoom] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
 
   // Persist localPlayerId to sessionStorage so it survives page refreshes
   useEffect(() => {
@@ -311,14 +310,6 @@ export function Room() {
   const allReady = bothPresent && players.every((p) => p.isReady);
   const canStart = allReady && isHost;
 
-  const copyCode = () => {
-    if (code) {
-      navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    }
-  };
-
   if (isLoadingRoom || authLoading) {
     return <LoadingIndicator text="loading room..." />;
   }
@@ -351,16 +342,7 @@ export function Room() {
         {/* Room code — only while waiting for player 2 */}
         {!bothPresent ? (
           <>
-            <div className="text-center">
-              <p className="mono-label mb-2.5">room code</p>
-              <RoomCodeDisplay code={code || ""} />
-              <button
-                className="font-mono text-[11px] text-pop font-bold mt-2.5 cursor-pointer bg-transparent border-0"
-                onClick={copyCode}
-              >
-                {copied ? "copied!" : "tap to copy"}
-              </button>
-            </div>
+            <RoomShare code={code || ""} />
             <div className="w-full h-[2px] bg-ink opacity-[0.06]" />
           </>
         ) : (
