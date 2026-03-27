@@ -20,6 +20,7 @@ import {
 import { Game } from "@twosome/domain";
 import type { TurnDTO, PlayerId, RoomId } from "@twosome/shared";
 import { LogoMark } from "@/components/ui/logo-mark";
+import { LoadingIndicator } from "@/components/ui/animated-logo";
 import {
   playYourTurn,
   playTurnReceived,
@@ -428,14 +429,7 @@ export function Play() {
 
   // ── Render ───────────────────────────────────────────────
   if (isLoading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center px-5 gap-3">
-        <LogoMark size="sm" />
-        <p className="font-mono text-xs text-ink-50 animate-pulse">
-          starting game...
-        </p>
-      </div>
-    );
+    return <LoadingIndicator text="starting game..." />;
   }
 
   return (

@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { auth } from "./container";
 import { useAuthStore } from "./hooks/use-auth-store";
 import { ErrorBoundary } from "./components/error-boundary";
+import { SplashScreen } from "./components/ui/splash-screen";
 import { Home } from "./routes/home";
 import { Setup } from "./routes/setup";
 import { Room } from "./routes/room";
@@ -33,9 +34,13 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const [splashDone, setSplashDone] = useState(false);
+  const handleSplashFinish = useCallback(() => setSplashDone(true), []);
+
   return (
     <BrowserRouter>
       <ErrorBoundary>
+        <SplashScreen visible={!splashDone} onFinish={handleSplashFinish} />
         <AuthProvider>
           <div className="min-h-dvh bg-bg flex flex-col items-center">
             <div className="w-full max-w-md min-h-dvh flex flex-col">

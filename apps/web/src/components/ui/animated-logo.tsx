@@ -1,7 +1,8 @@
 /**
- * Animated version of LogoMark — two circles orbit and pulse.
- * Used as loading indicator and in the splash screen.
+ * Animated LogoMark — powered by Framer Motion.
+ * Two circles breathe, pulse, and overlap smoothly.
  */
+import { motion } from "framer-motion";
 
 interface AnimatedLogoProps {
   size?: "sm" | "md" | "lg";
@@ -9,48 +10,53 @@ interface AnimatedLogoProps {
 }
 
 const sizes = {
-  sm: { box: 36, radius: 9, circleSize: 14 },
-  md: { box: 56, radius: 14, circleSize: 22 },
-  lg: { box: 80, radius: 20, circleSize: 32 },
+  sm: { box: 36, radius: 9, circle: 14 },
+  md: { box: 56, radius: 14, circle: 22 },
+  lg: { box: 80, radius: 20, circle: 32 },
 };
 
 export function AnimatedLogo({ size = "md", className = "" }: AnimatedLogoProps) {
   const s = sizes[size];
+  const centerY = s.box / 2 - s.circle / 2;
 
   return (
     <div
       className={`relative overflow-hidden bg-ink ${className}`}
-      style={{
-        width: s.box,
-        height: s.box,
-        borderRadius: s.radius,
-      }}
+      style={{ width: s.box, height: s.box, borderRadius: s.radius }}
     >
-      {/* Pop circle — breathes left/right */}
-      <div
-        className="absolute bg-pop rounded-full animate-logo-breathe-left"
-        style={{
-          width: s.circleSize,
-          height: s.circleSize,
-          top: "50%",
-          transform: "translateY(-50%)",
+      {/* Pop circle */}
+      <motion.div
+        className="absolute bg-pop rounded-full"
+        style={{ width: s.circle, height: s.circle, top: centerY }}
+        animate={{
+          left: [s.box * 0.12, s.box * 0.3, s.box * 0.12],
+          scale: [1, 1.1, 1],
+        }}
+        transition={{
+          duration: 1.8,
+          ease: "easeInOut",
+          repeat: Infinity,
         }}
       />
-      {/* White circle — breathes right/left */}
-      <div
-        className="absolute bg-white rounded-full opacity-85 animate-logo-breathe-right"
-        style={{
-          width: s.circleSize,
-          height: s.circleSize,
-          top: "50%",
-          transform: "translateY(-50%)",
+      {/* White circle */}
+      <motion.div
+        className="absolute bg-white rounded-full"
+        style={{ width: s.circle, height: s.circle, top: centerY, opacity: 0.85 }}
+        animate={{
+          left: [s.box * 0.52, s.box * 0.34, s.box * 0.52],
+          scale: [1, 1.1, 1],
+        }}
+        transition={{
+          duration: 1.8,
+          ease: "easeInOut",
+          repeat: Infinity,
         }}
       />
     </div>
   );
 }
 
-/** Inline loading indicator — animated logo with optional text */
+/** Inline loading indicator — animated logo + optional text */
 export function LoadingIndicator({
   text,
   size = "sm",
@@ -62,7 +68,13 @@ export function LoadingIndicator({
     <div className="flex-1 flex flex-col items-center justify-center px-5 gap-4">
       <AnimatedLogo size={size} />
       {text && (
-        <p className="font-mono text-xs text-ink-50 animate-pulse">{text}</p>
+        <motion.p
+          className="font-mono text-xs text-ink-50"
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          {text}
+        </motion.p>
       )}
     </div>
   );

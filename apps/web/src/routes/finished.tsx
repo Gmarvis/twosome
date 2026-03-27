@@ -9,6 +9,7 @@ import { Events } from "@twosome/shared";
 import { LogoMark } from "@/components/ui/logo-mark";
 import { SignupNudge } from "@/components/auth/signup-nudge";
 import { playGameFinished } from "@/hooks/use-sounds";
+import { LoadingIndicator } from "@/components/ui/animated-logo";
 import { formatResponseTime, formatDuration } from "@twosome/shared";
 
 /** Compute stats purely from turns + players — no Game entity needed */
@@ -250,12 +251,7 @@ export function Finished() {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center px-5 gap-3">
-        <LogoMark size="sm" />
-        <p className="font-mono text-xs text-ink-50 animate-pulse">loading story...</p>
-      </div>
-    );
+    return <LoadingIndicator text="loading story..." />;
   }
 
   return (

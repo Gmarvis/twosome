@@ -20,6 +20,7 @@ import { LogoMark } from "@/components/ui/logo-mark";
 import { PlayerCard } from "@/components/room/player-card";
 import { RoomCodeDisplay } from "@/components/room/room-code-display";
 import { playPlayerJoined, playGameStart } from "@/hooks/use-sounds";
+import { LoadingIndicator } from "@/components/ui/animated-logo";
 
 function getStoredPlayerId(code: string): PlayerId | null {
   const val = sessionStorage.getItem(`twosome:player:${code}`);
@@ -319,12 +320,7 @@ export function Room() {
   };
 
   if (isLoadingRoom || authLoading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center px-5 gap-3">
-        <LogoMark size="sm" />
-        <p className="font-mono text-xs text-ink-50 animate-pulse">loading room...</p>
-      </div>
-    );
+    return <LoadingIndicator text="loading room..." />;
   }
 
   if (error) {
