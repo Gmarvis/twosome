@@ -4,9 +4,8 @@
     "noEmit": true,
     "rootDir": "src",
     "outDir": "dist",
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
+      "@/*": ["./src/*"],
       "@twosome/shared": ["../../packages/shared/src"],
       "@twosome/shared/*": ["../../packages/shared/src/*"],
       "@twosome/domain": ["../../packages/domain/src"],
@@ -17,11 +16,5 @@
       "@twosome/infrastructure/*": ["../../packages/infrastructure/src/*"]
     }
   },
-  "include": ["src"],
-  "references": [
-    { "path": "../../packages/shared" },
-    { "path": "../../packages/domain" },
-    { "path": "../../packages/application" },
-    { "path": "../../packages/infrastructure" }
-  ]
+  "include": ["src"]
 }

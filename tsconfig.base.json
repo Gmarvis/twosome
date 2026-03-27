@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -15,16 +14,15 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "baseUrl": ".",
     "paths": {
-      "@twosome/domain": ["packages/domain/src"],
-      "@twosome/domain/*": ["packages/domain/src/*"],
-      "@twosome/application": ["packages/application/src"],
-      "@twosome/application/*": ["packages/application/src/*"],
-      "@twosome/infrastructure": ["packages/infrastructure/src"],
-      "@twosome/infrastructure/*": ["packages/infrastructure/src/*"],
-      "@twosome/shared": ["packages/shared/src"],
-      "@twosome/shared/*": ["packages/shared/src/*"]
+      "@twosome/domain": ["./packages/domain/src"],
+      "@twosome/domain/*": ["./packages/domain/src/*"],
+      "@twosome/application": ["./packages/application/src"],
+      "@twosome/application/*": ["./packages/application/src/*"],
+      "@twosome/infrastructure": ["./packages/infrastructure/src"],
+      "@twosome/infrastructure/*": ["./packages/infrastructure/src/*"],
+      "@twosome/shared": ["./packages/shared/src"],
+      "@twosome/shared/*": ["./packages/shared/src/*"]
     }
   },
   "exclude": ["node_modules", "dist"]
