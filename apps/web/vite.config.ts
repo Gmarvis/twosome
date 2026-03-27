@@ -8,7 +8,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icons/*.png"],
+      includeAssets: [
+        "icons/favicon.svg",
+        "icons/apple-touch-icon.png",
+        "icons/icon-192.png",
+        "icons/icon-512.png",
+        "icons/maskable-512.png",
+      ],
       manifest: {
         name: "twosome.",
         short_name: "twosome",
@@ -17,9 +23,26 @@ export default defineConfig({
         background_color: "#F5F1EB",
         display: "standalone",
         orientation: "portrait",
+        scope: "/",
+        start_url: "/",
+        categories: ["games", "entertainment"],
         icons: [
-          { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-          { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+          {
+            src: "/icons/icon-192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/icons/icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
+          {
+            src: "/icons/maskable-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
         ],
       },
     }),
