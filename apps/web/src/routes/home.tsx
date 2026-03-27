@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { LogoMark } from "@/components/ui/logo-mark";
+import { unlockAudio } from "@/hooks/use-sounds";
 
 export function Home() {
   const navigate = useNavigate();
@@ -11,11 +12,13 @@ export function Home() {
 
   const handleCreate = () => {
     if (!displayName.trim()) return;
+    unlockAudio();
     navigate("/setup");
   };
 
   const handleJoin = () => {
     if (!displayName.trim()) return;
+    unlockAudio();
     if (showJoin && joinCode.trim().length === 6) {
       navigate(`/room/${joinCode.toUpperCase()}`);
     } else {

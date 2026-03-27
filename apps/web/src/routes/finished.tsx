@@ -8,6 +8,7 @@ import type { RoomId, RoomCode, TurnDTO, GameStats, PlayerContributions } from "
 import { Events } from "@twosome/shared";
 import { LogoMark } from "@/components/ui/logo-mark";
 import { SignupNudge } from "@/components/auth/signup-nudge";
+import { playGameFinished } from "@/hooks/use-sounds";
 import { formatResponseTime, formatDuration } from "@twosome/shared";
 
 /** Compute stats purely from turns + players — no Game entity needed */
@@ -99,6 +100,9 @@ export function Finished() {
   const { user, displayName } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [isCreatingRematch, setIsCreatingRematch] = useState(false);
+
+  // Sound on mount
+  useEffect(() => { playGameFinished(); }, []);
 
   // Recover data from DB if Zustand was reset (page refresh)
   useEffect(() => {

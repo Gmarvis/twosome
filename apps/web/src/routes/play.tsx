@@ -20,6 +20,13 @@ import {
 import { Game } from "@twosome/domain";
 import type { TurnDTO, PlayerId, RoomId } from "@twosome/shared";
 import { LogoMark } from "@/components/ui/logo-mark";
+import {
+  playYourTurn,
+  playTurnReceived,
+  playSubmitSuccess,
+  playTimerTick,
+  playGameFinished,
+} from "@/hooks/use-sounds";
 
 function log(...args: unknown[]) {
   console.log("[play]", ...args);
@@ -285,6 +292,7 @@ export function Play() {
         }
         setTimerSeconds(null);
       } else {
+        if (remaining <= 3) playTimerTick();
         setTimerSeconds(remaining);
       }
     }, 1000);
@@ -293,6 +301,23 @@ export function Play() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [isMyTurn, room?.turnTimer, localPlayerId, roomId, isGameOver]);
+
+  // ── Sound: your turn / turn received ─────────────────────
+  const prevTurnCount = useRef(turns.length);
+  useEffect(() => {
+    if (isLoading) return;
+    // Only play sounds after the initial load
+    if (prevTurnCount.current !== turns.length) {
+      prevTurnCount.current = turns.length;
+      if (isMyTurn && !isGameOver) playYourTurn();
+      else if (!isMyTurn && !isGameOver) playTurnReceived();
+    }
+  }, [turns.length, isMyTurn, isGameOver, isLoading]);
+
+  // ── Sound: game finished ─────────────────────────────────
+  useEffect(() => {
+    if (isGameOver) playGameFinished();
+  }, [isGameOver]);
 
   // ── Auto-focus + auto-scroll ─────────────────────────────
   useEffect(() => {
@@ -365,6 +390,7 @@ export function Play() {
     addTurn(turn);
     setInput("");
     setTurnStartTime(Date.now());
+    playSubmitSuccess();
 
     try {
       await submitTurn.execute(

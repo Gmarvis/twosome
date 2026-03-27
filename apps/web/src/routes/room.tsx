@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { useGameStore } from "@/hooks/use-game-store";
@@ -19,6 +19,7 @@ import type { RoomCode, PlayerId } from "@twosome/shared";
 import { LogoMark } from "@/components/ui/logo-mark";
 import { PlayerCard } from "@/components/room/player-card";
 import { RoomCodeDisplay } from "@/components/room/room-code-display";
+import { playPlayerJoined, playGameStart } from "@/hooks/use-sounds";
 
 function getStoredPlayerId(code: string): PlayerId | null {
   const val = sessionStorage.getItem(`twosome:player:${code}`);
@@ -257,6 +258,7 @@ export function Room() {
 
     const unsubBroadcast = realtime.onBroadcast(currentRoomId, (event) => {
       if (event.type === "game.started") {
+        playGameStart();
         setPhase("playing");
         navigate(`/play/${currentRoomId}`);
       }
@@ -283,6 +285,7 @@ export function Room() {
     if (!room?.id) return;
     try {
       await startGame.execute(startGameCommand({ roomId: room.id }));
+      playGameStart();
       setPhase("playing");
       navigate(`/play/${room.id}`);
     } catch (err: any) {
@@ -295,6 +298,15 @@ export function Room() {
   const hostPlayer = players.find((p) => p.isHost);
   const bothPresent = players.length >= 2;
   const isHost = localPlayer?.isHost ?? false;
+
+  // Sound: player joined
+  const prevPlayerCount = useRef(players.length);
+  useEffect(() => {
+    if (players.length >= 2 && prevPlayerCount.current < 2) {
+      playPlayerJoined();
+    }
+    prevPlayerCount.current = players.length;
+  }, [players.length]);
   const allReady = bothPresent && players.every((p) => p.isReady);
   const canStart = allReady && isHost;
 
