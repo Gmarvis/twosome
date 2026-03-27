@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@twosome/domain": ["packages/domain/src"],
+      "@twosome/domain/*": ["packages/domain/src/*"],
+      "@twosome/application": ["packages/application/src"],
+      "@twosome/application/*": ["packages/application/src/*"],
+      "@twosome/infrastructure": ["packages/infrastructure/src"],
+      "@twosome/infrastructure/*": ["packages/infrastructure/src/*"],
+      "@twosome/shared": ["packages/shared/src"],
+      "@twosome/shared/*": ["packages/shared/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}

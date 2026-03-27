@@ -1,0 +1,10 @@
+{
+  "name": "@twosome/supabase",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "migrate": "supabase db push",
+    "reset": "supabase db reset",
+    "types": "supabase gen types typescript --local > src/database.types.ts"
+  }
+}

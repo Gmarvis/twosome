@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@twosome/shared": ["../../packages/shared/src"],
+      "@twosome/shared/*": ["../../packages/shared/src/*"],
+      "@twosome/domain": ["../../packages/domain/src"],
+      "@twosome/domain/*": ["../../packages/domain/src/*"],
+      "@twosome/application": ["../../packages/application/src"],
+      "@twosome/application/*": ["../../packages/application/src/*"],
+      "@twosome/infrastructure": ["../../packages/infrastructure/src"],
+      "@twosome/infrastructure/*": ["../../packages/infrastructure/src/*"]
+    }
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../../packages/shared" },
+    { "path": "../../packages/domain" },
+    { "path": "../../packages/application" },
+    { "path": "../../packages/infrastructure" }
+  ]
+}

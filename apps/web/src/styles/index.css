@@ -1,0 +1,86 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@400;500;600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 36 30% 94%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 350 90% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 36 30% 94%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 36 15% 89%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 36 20% 90%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 10% / 0.15;
+    --input: 0 0% 10% / 0.15;
+    --ring: 350 90% 60%;
+    --radius: 12px;
+  }
+
+  body {
+    @apply bg-bg text-ink font-display antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input, button, textarea {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .btn-main {
+    @apply w-full py-4 bg-ink text-white rounded-[12px] font-bold text-[15px]
+           transition-transform active:scale-[0.97] border-0 cursor-pointer;
+  }
+
+  .btn-pop {
+    @apply w-full py-4 bg-pop text-white rounded-[12px] font-bold text-[15px]
+           transition-transform active:scale-[0.97] border-0 cursor-pointer;
+  }
+
+  .btn-ghost {
+    @apply w-full py-3.5 bg-transparent text-ink rounded-[12px] font-bold text-[15px]
+           border-[2.5px] border-ink cursor-pointer
+           transition-colors hover:bg-ink hover:text-white;
+  }
+
+  .btn-sm {
+    @apply py-2.5 px-4 bg-pop text-white rounded-[10px] font-bold text-[13px]
+           border-0 cursor-pointer;
+  }
+
+  .field {
+    @apply w-full py-3.5 px-4 bg-white border-[2.5px] border-ink rounded-[12px]
+           font-mono text-sm text-ink outline-none
+           placeholder:text-ink-20 focus:border-pop transition-colors;
+  }
+
+  .chip {
+    @apply py-2 px-3.5 border-2 border-ink-20 rounded-chip font-mono text-[11px]
+           text-ink-50 bg-transparent cursor-pointer transition-all;
+  }
+
+  .chip-active {
+    @apply border-pop text-pop-dark bg-pop-soft font-bold;
+  }
+
+  .mono-label {
+    @apply font-mono text-[10px] tracking-wider uppercase text-ink-50;
+  }
+
+  .story-box {
+    @apply bg-white border-[2.5px] border-ink rounded-card p-4
+           font-display text-base font-medium leading-[1.8];
+  }
+}
