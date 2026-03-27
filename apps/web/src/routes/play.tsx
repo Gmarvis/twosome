@@ -320,15 +320,7 @@ export function Play() {
     if (isGameOver) playGameFinished();
   }, [isGameOver]);
 
-  // ── Auto-focus + auto-scroll ─────────────────────────────
-  useEffect(() => {
-    if (!isLoading && !isGameOver) {
-      // Small delay so the DOM is fully painted before we grab focus
-      const t = setTimeout(() => inputRef.current?.focus(), 120);
-      return () => clearTimeout(t);
-    }
-  }, [isLoading, isMyTurn, isGameOver]);
-
+  // ── Auto-scroll ──────────────────────────────────────────
   useEffect(() => {
     storyRef.current?.scrollTo({
       top: storyRef.current.scrollHeight,
@@ -531,7 +523,6 @@ export function Play() {
         <div className={`flex gap-2 ${isMyTurn && !isGameOver ? "animate-pulse-once" : ""}`}>
           <input
             ref={inputRef}
-            autoFocus
             className={`field flex-1 transition-shadow duration-300 ${
               isMyTurn && !isGameOver ? "ring-2 ring-pop/40 shadow-[0_0_12px_rgba(232,82,88,0.15)]" : ""
             }`}

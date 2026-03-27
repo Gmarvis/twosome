@@ -4,23 +4,44 @@
  */
 
 let ctx: AudioContext | null = null;
+let unlocked = false;
 
 function getCtx(): AudioContext {
-  if (!ctx) ctx = new AudioContext();
-  if (ctx.state === "suspended") ctx.resume();
+  if (!ctx) {
+    ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }
   return ctx;
 }
 
-/** Unlock AudioContext on first user tap (needed for iOS Safari) */
-export function unlockAudio() {
-  const c = getCtx();
-  if (c.state === "suspended") {
-    const buf = c.createBuffer(1, 1, 22050);
-    const src = c.createBufferSource();
-    src.buffer = buf;
-    src.connect(c.destination);
-    src.start(0);
-  }
+/**
+ * Unlock AudioContext on first user tap (needed for iOS Safari).
+ * Call this once — it registers a global listener that auto-removes itself.
+ */
+export function initAudio() {
+  if (unlocked) return;
+
+  const unlock = () => {
+    const c = getCtx();
+    if (c.state === "suspended") {
+      c.resume().then(() => {
+        // Play a silent buffer to fully unlock on iOS
+        const buf = c.createBuffer(1, 1, 22050);
+        const src = c.createBufferSource();
+        src.buffer = buf;
+        src.connect(c.destination);
+        src.start(0);
+      });
+    }
+    unlocked = true;
+    document.removeEventListener("touchstart", unlock, true);
+    document.removeEventListener("touchend", unlock, true);
+    document.removeEventListener("click", unlock, true);
+  };
+
+  // Register on multiple events — iOS needs touchstart/touchend
+  document.addEventListener("touchstart", unlock, true);
+  document.addEventListener("touchend", unlock, true);
+  document.addEventListener("click", unlock, true);
 }
 
 function playTone(
@@ -32,6 +53,9 @@ function playTone(
 ) {
   try {
     const c = getCtx();
+    // Ensure resumed (fire-and-forget, no-op if already running)
+    if (c.state === "suspended") c.resume().catch(() => {});
+    if (c.state !== "running") return; // Don't play if still locked
     const osc = c.createOscillator();
     const gain = c.createGain();
     osc.type = type;
