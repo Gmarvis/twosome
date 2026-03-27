@@ -1,10 +1,13 @@
 /**
  * Lightweight sound effects using Web Audio API.
  * No audio files — just synthesised tones.
+ *
+ * iOS Safari requires AudioContext.resume() to be called inside a user gesture.
+ * We register persistent listeners that call resume() on EVERY tap until it
+ * transitions to "running". After that, resume() is a cheap no-op.
  */
 
 let ctx: AudioContext | null = null;
-let unlocked = false;
 
 function getCtx(): AudioContext {
   if (!ctx) {
@@ -13,31 +16,19 @@ function getCtx(): AudioContext {
   return ctx;
 }
 
-/**
- * Unlock AudioContext on first user tap (needed for iOS Safari).
- * Call this once — it registers a global listener that auto-removes itself.
- */
+/** Register persistent listeners that unlock AudioContext on user interaction. */
 export function initAudio() {
-  if (unlocked) return;
-
-  const events = ["touchstart", "touchend", "click", "keydown"] as const;
-
-  const unlock = () => {
-    const c = getCtx();
-    // Play a silent buffer synchronously inside the gesture handler —
-    // this is what iOS requires to permanently unlock audio.
-    const buf = c.createBuffer(1, 1, 22050);
-    const src = c.createBufferSource();
-    src.buffer = buf;
-    src.connect(c.destination);
-    src.start(0);
-    // Also resume if suspended
-    if (c.state === "suspended") c.resume().catch(() => {});
-    unlocked = true;
-    for (const e of events) document.removeEventListener(e, unlock, true);
+  const tryResume = () => {
+    try {
+      const c = getCtx();
+      if (c.state === "suspended") c.resume();
+    } catch { /* ignore */ }
   };
-
-  for (const e of events) document.addEventListener(e, unlock, true);
+  // Passive + capture: fires before anything else, doesn't block scrolling
+  document.addEventListener("touchstart", tryResume, { capture: true, passive: true });
+  document.addEventListener("touchend", tryResume, { capture: true, passive: true });
+  document.addEventListener("click", tryResume, { capture: true });
+  document.addEventListener("keydown", tryResume, { capture: true });
 }
 
 function playTone(
@@ -49,8 +40,13 @@ function playTone(
 ) {
   try {
     const c = getCtx();
-    // Try to resume if still suspended (belt and suspenders)
-    if (c.state === "suspended") c.resume().catch(() => {});
+    // If still suspended, schedule for after resume
+    if (c.state !== "running") {
+      c.resume()
+        .then(() => playTone(freq, duration, type, volume, ramp))
+        .catch(() => {});
+      return;
+    }
     const osc = c.createOscillator();
     const gain = c.createGain();
     osc.type = type;
@@ -87,23 +83,19 @@ export function playPlayerJoined() {
   setTimeout(() => playTone(784, 0.18, "sine", 0.25), 240);
 }
 
-/** Triumphant celebration — game finished! 🎉
- *  Mario-style "stage clear" melody with harmonics */
+/** Triumphant celebration — game finished! 🎉 */
 export function playGameFinished() {
-  // Melody: C E G C' E' — bright ascending fanfare
-  playTone(523, 0.15, "sine", 0.2);       // C5
-  setTimeout(() => playTone(659, 0.15, "sine", 0.2), 120);   // E5
-  setTimeout(() => playTone(784, 0.15, "sine", 0.22), 240);  // G5
-  setTimeout(() => playTone(1047, 0.2, "sine", 0.25), 360);  // C6
-  // Harmony burst
+  playTone(523, 0.15, "sine", 0.2);
+  setTimeout(() => playTone(659, 0.15, "sine", 0.2), 120);
+  setTimeout(() => playTone(784, 0.15, "sine", 0.22), 240);
+  setTimeout(() => playTone(1047, 0.2, "sine", 0.25), 360);
   setTimeout(() => {
-    playTone(1319, 0.35, "sine", 0.25);   // E6
-    playTone(784, 0.35, "sine", 0.12);    // G5 underneath
-    playTone(523, 0.35, "sine", 0.08);    // C5 bass
+    playTone(1319, 0.35, "sine", 0.25);
+    playTone(784, 0.35, "sine", 0.12);
+    playTone(523, 0.35, "sine", 0.08);
   }, 500);
-  // Final sparkle
-  setTimeout(() => playTone(1568, 0.4, "sine", 0.15), 700);  // G6
-  setTimeout(() => playTone(2093, 0.5, "sine", 0.1), 850);   // C7 shimmer
+  setTimeout(() => playTone(1568, 0.4, "sine", 0.15), 700);
+  setTimeout(() => playTone(2093, 0.5, "sine", 0.1), 850);
 }
 
 /** Short tick — timer countdown (3, 2, 1) */
