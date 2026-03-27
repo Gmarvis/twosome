@@ -80,10 +80,10 @@ export function Setup() {
 
         <div>
           <label className="mono-label mb-1.5 block">timer</label>
-          <div className="flex gap-1.5">
-            {([5, 10, 15] as const).map((t) => (
+          <div className="flex flex-wrap gap-1.5">
+            {([3, 5, 10, 15, 30, 60] as const).map((t) => (
               <Chip key={t} active={turnTimer === t} onClick={() => setTurnTimer(t)}>
-                {t}s
+                {t === 60 ? "1m" : `${t}s`}
               </Chip>
             ))}
             <Chip active={turnTimer === null} onClick={() => setTurnTimer(null)}>
@@ -94,8 +94,8 @@ export function Setup() {
 
         <div>
           <label className="mono-label mb-1.5 block">turns</label>
-          <div className="flex gap-1.5">
-            {([10, 20, 50] as const).map((t) => (
+          <div className="flex flex-wrap gap-1.5">
+            {([5, 10, 20, 30, 50, 100] as const).map((t) => (
               <Chip key={t} active={maxTurns === t} onClick={() => setMaxTurns(t)}>
                 {t}
               </Chip>

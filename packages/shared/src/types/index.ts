@@ -38,10 +38,10 @@ export type FriendshipStatus =
 // Timer presets
 // ============================================================
 
-export const TimerPresets = [5, 10, 15] as const;
+export const TimerPresets = [3, 5, 10, 15, 30, 60] as const;
 export type TimerPreset = (typeof TimerPresets)[number];
 
-export const TurnPresets = [10, 20, 50] as const;
+export const TurnPresets = [5, 10, 20, 30, 50, 100] as const;
 export type TurnPreset = (typeof TurnPresets)[number];
 
 // ============================================================
