@@ -1,7 +1,7 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { RoomId, PlayerId, TwosomeEvent } from "@twosome/shared";
-import type { RealtimePort, PresenceState } from "@twosome/application";
 import { getSupabaseClient } from "../supabase/client";
+import { PresenceState, RealtimePort } from "@twosome/application";
 
 type BroadcastCallback = (event: TwosomeEvent) => void;
 type PresenceCallback = (players: PresenceState[]) => void;
