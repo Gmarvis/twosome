@@ -20,28 +20,24 @@ function getCtx(): AudioContext {
 export function initAudio() {
   if (unlocked) return;
 
+  const events = ["touchstart", "touchend", "click", "keydown"] as const;
+
   const unlock = () => {
     const c = getCtx();
-    if (c.state === "suspended") {
-      c.resume().then(() => {
-        // Play a silent buffer to fully unlock on iOS
-        const buf = c.createBuffer(1, 1, 22050);
-        const src = c.createBufferSource();
-        src.buffer = buf;
-        src.connect(c.destination);
-        src.start(0);
-      });
-    }
+    // Play a silent buffer synchronously inside the gesture handler —
+    // this is what iOS requires to permanently unlock audio.
+    const buf = c.createBuffer(1, 1, 22050);
+    const src = c.createBufferSource();
+    src.buffer = buf;
+    src.connect(c.destination);
+    src.start(0);
+    // Also resume if suspended
+    if (c.state === "suspended") c.resume().catch(() => {});
     unlocked = true;
-    document.removeEventListener("touchstart", unlock, true);
-    document.removeEventListener("touchend", unlock, true);
-    document.removeEventListener("click", unlock, true);
+    for (const e of events) document.removeEventListener(e, unlock, true);
   };
 
-  // Register on multiple events — iOS needs touchstart/touchend
-  document.addEventListener("touchstart", unlock, true);
-  document.addEventListener("touchend", unlock, true);
-  document.addEventListener("click", unlock, true);
+  for (const e of events) document.addEventListener(e, unlock, true);
 }
 
 function playTone(
@@ -53,9 +49,8 @@ function playTone(
 ) {
   try {
     const c = getCtx();
-    // Ensure resumed (fire-and-forget, no-op if already running)
+    // Try to resume if still suspended (belt and suspenders)
     if (c.state === "suspended") c.resume().catch(() => {});
-    if (c.state !== "running") return; // Don't play if still locked
     const osc = c.createOscillator();
     const gain = c.createGain();
     osc.type = type;
