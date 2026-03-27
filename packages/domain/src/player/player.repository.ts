@@ -6,5 +6,6 @@ export interface PlayerRepository {
   findById(id: PlayerId): Promise<Player | null>;
   findByRoomId(roomId: RoomId): Promise<Player[]>;
   updateReady(id: PlayerId, isReady: boolean): Promise<void>;
+  updateDisplayName(id: PlayerId, displayName: string): Promise<void>;
   remove(id: PlayerId): Promise<void>;
 }

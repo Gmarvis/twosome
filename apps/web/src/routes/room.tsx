@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { useGameStore } from "@/hooks/use-game-store";
 import {
@@ -8,6 +8,7 @@ import {
   startGame,
   getRoomByCode,
   realtime,
+  playerRepo,
 } from "@/container";
 import {
   joinRoomCommand,
@@ -33,8 +34,10 @@ function storePlayerId(code: string, playerId: PlayerId) {
 
 export function Room() {
   const { code } = useParams<{ code: string }>();
+  const [searchParams] = useSearchParams();
+  const isRematch = searchParams.get("rematch") === "1";
   const navigate = useNavigate();
-  const { user, displayName, isLoading: authLoading } = useAuthStore();
+  const { user, displayName, setDisplayName, isLoading: authLoading } = useAuthStore();
   const {
     room,
     setRoom,
@@ -49,6 +52,9 @@ export function Room() {
   const [isJoining, setIsJoining] = useState(false);
   const [isLoadingRoom, setIsLoadingRoom] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Name gate: when a guest arrives without a name, we pause before joining
+  const [needsName, setNeedsName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
 
   // Persist localPlayerId to sessionStorage so it survives page refreshes
   useEffect(() => {
@@ -95,12 +101,35 @@ export function Room() {
         setRoom(result.room);
         setPlayers(result.players);
 
+        // Helper: fix a generic DB name if user now has a real name
+        const fixStaleNameIfNeeded = async (matchedPlayer: { id: PlayerId; displayName: string }) => {
+          const isGeneric = /^(player(\s*\d+)?|friend)$/i.test(matchedPlayer.displayName.trim());
+          if (isGeneric && displayName.trim()) {
+            console.log("[room] fixing stale name:", matchedPlayer.displayName, "→", displayName);
+            try {
+              await playerRepo.updateDisplayName(matchedPlayer.id as PlayerId, displayName.trim());
+              // Update local state too
+              updatePlayer(matchedPlayer.id as PlayerId, {} as any);
+              // Re-fetch to get fresh names
+              const refreshed = await getRoomByCode.execute(
+                getRoomByCodeQuery({ code: code as RoomCode }),
+              );
+              if (refreshed) {
+                setPlayers(refreshed.players);
+              }
+            } catch (err) {
+              console.error("[room] failed to fix stale name:", err);
+            }
+          }
+        };
+
         // 1) Check Zustand localPlayerId (host navigating from /setup)
         const zustandPlayerId = useGameStore.getState().localPlayerId;
         if (zustandPlayerId) {
           const match = result.players.find((p) => p.id === zustandPlayerId);
           if (match) {
             console.log("[room] found self via zustand localPlayerId:", zustandPlayerId);
+            await fixStaleNameIfNeeded(match);
             setIsLoadingRoom(false);
             return;
           }
@@ -113,6 +142,7 @@ export function Room() {
           if (match) {
             console.log("[room] found self via sessionStorage:", storedId);
             setLocalPlayerId(match.id);
+            await fixStaleNameIfNeeded(match);
             setIsLoadingRoom(false);
             return;
           }
@@ -124,6 +154,7 @@ export function Room() {
           if (match) {
             console.log("[room] found self via userId:", match.id);
             setLocalPlayerId(match.id);
+            await fixStaleNameIfNeeded(match);
             setIsLoadingRoom(false);
             return;
           }
@@ -172,13 +203,25 @@ export function Room() {
         }
 
         console.log("[room] joining room...");
+
+        // Gate: if no display name and NOT a rematch, ask for one first
+        if (!displayName.trim() && !isRematch) {
+          console.log("[room] no display name — showing name prompt");
+          setNeedsName(true);
+          setIsLoadingRoom(false);
+          return;
+        }
+
+        // For rematch with no name (edge case), use a safe default
+        const joinName = displayName.trim() || "rematcher";
+
         setIsJoining(true);
 
         try {
           const joinResult = await joinRoom.execute(
             joinRoomCommand({
               code: code as RoomCode,
-              displayName: displayName || "Player 2",
+              displayName: joinName,
               userId: user?.id ?? null,
             }),
           );
@@ -293,6 +336,41 @@ export function Room() {
     }
   }, [room?.id]);
 
+  // Join with name (called from the name gate)
+  const joinWithName = useCallback(async () => {
+    if (!code || !nameInput.trim()) return;
+    const name = nameInput.trim();
+    setDisplayName(name);
+    setNeedsName(false);
+    setIsJoining(true);
+
+    try {
+      const joinResult = await joinRoom.execute(
+        joinRoomCommand({
+          code: code as RoomCode,
+          displayName: name,
+          userId: user?.id ?? null,
+        }),
+      );
+
+      console.log("[room] joined with name:", joinResult.playerId);
+      setLocalPlayerId(joinResult.playerId);
+
+      const updated = await getRoomByCode.execute(
+        getRoomByCodeQuery({ code: code as RoomCode }),
+      );
+      if (updated) {
+        setRoom(updated.room);
+        setPlayers(updated.players);
+      }
+    } catch (err: any) {
+      console.error("[room] join failed:", err);
+      setError(err.message || "failed to join room");
+    } finally {
+      setIsJoining(false);
+    }
+  }, [code, nameInput, user?.id]);
+
   const localPlayer = players.find((p) => p.id === localPlayerId);
   const otherPlayer = players.find((p) => p.id !== localPlayerId);
   const hostPlayer = players.find((p) => p.isHost);
@@ -325,6 +403,42 @@ export function Room() {
     );
   }
 
+  // Name gate: guest arrived without a display name
+  if (needsName) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center px-5 gap-6">
+        <LogoMark size="sm" />
+        <div className="text-center">
+          <h2 className="font-display font-black text-2xl text-ink">what's your name?</h2>
+          <p className="font-mono text-xs text-ink-50 mt-1">so your partner knows who you are</p>
+        </div>
+        <form
+          className="w-full flex flex-col gap-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            joinWithName();
+          }}
+        >
+          <input
+            className="field text-center"
+            placeholder="your name"
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            maxLength={20}
+            autoFocus
+          />
+          <button
+            className="btn-pop w-full"
+            type="submit"
+            disabled={!nameInput.trim() || isJoining}
+          >
+            {isJoining ? "joining..." : "join game →"}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col px-5 pb-5">
       {/* Header */}
@@ -341,10 +455,22 @@ export function Room() {
       <div className="flex-1 flex flex-col items-center justify-center gap-5">
         {/* Room code — only while waiting for player 2 */}
         {!bothPresent ? (
-          <>
-            <RoomShare code={code || ""} />
-            <div className="w-full h-[2px] bg-ink opacity-[0.06]" />
-          </>
+          isRematch ? (
+            <div className="flex flex-col items-center gap-4 animate-pulse">
+              <div className="text-4xl">🔄</div>
+              <h2 className="font-display font-black text-2xl text-ink text-center">
+                setting up<br />rematch...
+              </h2>
+              <p className="font-mono text-xs text-ink-50">
+                waiting for your partner to join
+              </p>
+            </div>
+          ) : (
+            <>
+              <RoomShare code={code || ""} />
+              <div className="w-full h-[2px] bg-ink opacity-[0.06]" />
+            </>
+          )
         ) : (
           <div className="text-center animate-bounce-in">
             <h2 className="font-display font-black text-[52px] leading-none tracking-tight text-pop">
@@ -387,7 +513,7 @@ export function Room() {
           ) : (
             <div className="p-4 border-[2.5px] border-dashed border-ink-20 rounded-card flex items-center justify-center">
               <span className="font-mono text-xs text-ink-20">
-                {isJoining ? "joining..." : "waiting for player 2..."}
+                {isJoining ? "joining..." : "waiting for your partner..."}
               </span>
             </div>
           )}

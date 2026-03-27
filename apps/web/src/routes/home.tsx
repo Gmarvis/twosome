@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { LogoMark } from "@/components/ui/logo-mark";
@@ -6,21 +5,10 @@ import { LogoMark } from "@/components/ui/logo-mark";
 export function Home() {
   const navigate = useNavigate();
   const { displayName, setDisplayName } = useAuthStore();
-  const [joinCode, setJoinCode] = useState("");
-  const [showJoin, setShowJoin] = useState(false);
 
   const handleCreate = () => {
     if (!displayName.trim()) return;
     navigate("/setup");
-  };
-
-  const handleJoin = () => {
-    if (!displayName.trim()) return;
-    if (showJoin && joinCode.trim().length === 6) {
-      navigate(`/room/${joinCode.toUpperCase()}`);
-    } else {
-      setShowJoin(true);
-    }
   };
 
   return (
@@ -44,34 +32,17 @@ export function Home() {
           maxLength={20}
         />
 
-        <button className="btn-main" onClick={handleCreate}>
-          start new game <span className="text-pop ml-1.5">→</span>
+        <button className="btn-pop" onClick={handleCreate} disabled={!displayName.trim()}>
+          start new game →
         </button>
-
-        {showJoin ? (
-          <div className="flex gap-2">
-            <input
-              className="field flex-1 text-center uppercase tracking-widest"
-              placeholder="ROOM CODE"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              maxLength={6}
-              autoFocus
-            />
-            <button
-              className="btn-sm rounded px-5"
-              onClick={handleJoin}
-              disabled={joinCode.length !== 6}
-            >
-              go
-            </button>
-          </div>
-        ) : (
-          <button className="btn-ghost" onClick={handleJoin}>
-            jump in
-          </button>
-        )}
       </div>
+
+      <button
+        className="font-mono text-xs text-ink-50 underline underline-offset-2 cursor-pointer mt-1"
+        onClick={() => navigate("/how-to-play")}
+      >
+        how does this work?
+      </button>
 
       <p className="mono-label mt-auto pb-2">
         no signup · no bs · just play

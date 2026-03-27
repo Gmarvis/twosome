@@ -52,6 +52,15 @@ export class SupabasePlayerRepository implements PlayerRepository {
     if (error) throw new Error(`Failed to update ready: ${error.message}`);
   }
 
+  async updateDisplayName(id: PlayerId, displayName: string): Promise<void> {
+    const { error } = await this.db
+      .from("room_players")
+      .update({ display_name: displayName })
+      .eq("id", id);
+
+    if (error) throw new Error(`Failed to update display name: ${error.message}`);
+  }
+
   async remove(id: PlayerId): Promise<void> {
     const { error } = await this.db
       .from("room_players")

@@ -70,8 +70,8 @@ export function BookPage({ turns, player1Id, contributions, durationSeconds }: B
         }}
       >
         <span>
-          {contributions?.player1.name ?? "Player 1"} &{" "}
-          {contributions?.player2.name ?? "Player 2"}
+          {contributions?.player1.name} &{" "}
+          {contributions?.player2.name}
         </span>
         <span>
           {turns.length} words

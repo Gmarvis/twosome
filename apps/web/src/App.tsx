@@ -10,6 +10,7 @@ import { Room } from "./routes/room";
 import { Play } from "./routes/play";
 import { Finished } from "./routes/finished";
 import { AuthCallback } from "./routes/auth-callback";
+import { HowToPlay } from "./routes/how-to-play";
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setLoading } = useAuthStore();
@@ -50,6 +51,7 @@ export default function App() {
                 <Route path="/room/:code" element={<Room />} />
                 <Route path="/play/:roomId" element={<Play />} />
                 <Route path="/finished/:roomId" element={<Finished />} />
+                <Route path="/how-to-play" element={<HowToPlay />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
               </Routes>
             </div>

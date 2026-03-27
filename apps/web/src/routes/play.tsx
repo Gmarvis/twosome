@@ -465,11 +465,11 @@ export function Play() {
         <div className="flex gap-2 justify-center items-center mb-3">
           <span className="w-2 h-2 rounded-full bg-pop" />
           <span className="font-mono text-[10px] text-ink-50">
-            {players[0]?.displayName ?? "player 1"}
+            {players[0]?.displayName}
           </span>
           <span className="w-2 h-2 rounded-full bg-ink ml-1" />
           <span className="font-mono text-[10px] text-ink-50">
-            {players[1]?.displayName ?? "player 2"}
+            {players[1]?.displayName}
           </span>
         </div>
 
@@ -514,8 +514,8 @@ export function Play() {
             {isGameOver
               ? ""
               : isMyTurn
-                ? `${otherPlayer?.displayName ?? "partner"} is watching`
-                : `${otherPlayer?.displayName ?? "partner"} is writing...`}
+                ? `${otherPlayer?.displayName ?? "them"} is watching`
+                : `${otherPlayer?.displayName ?? "them"} is writing...`}
           </span>
         </div>
 

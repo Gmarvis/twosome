@@ -25,7 +25,7 @@ export function Setup() {
 
     try {
       const payload: CreateRoomPayload = {
-        hostDisplayName: displayName || "Player",
+        hostDisplayName: displayName,
         hostUserId: user?.id ?? null,
         gameMode,
         turnTimer,

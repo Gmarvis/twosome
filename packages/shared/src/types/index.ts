@@ -122,3 +122,31 @@ export interface GameStats {
   skips: { playerName: string; count: number };
   durationSeconds: number;
 }
+
+// ============================================================
+// AI Analysis types
+// ============================================================
+
+export interface PlayerProfile {
+  name: string;
+  role: string;
+  read: string;
+  patterns: string[];
+  signatureMove: string;
+}
+
+export interface DynamicAnalysis {
+  syncScore: number;
+  syncLabel: string;
+  summary: string;
+  style: string;
+  connectionInsight: string;
+}
+
+export interface StoryAnalysis {
+  headline: string;
+  player1: PlayerProfile;
+  player2: PlayerProfile;
+  dynamic: DynamicAnalysis;
+  surprises: string[];
+}
