@@ -15,7 +15,6 @@ export function RoomShare({ code }: RoomShareProps) {
       try {
         await navigator.share({
           title: "twosome.",
-          text: "Join my game!",
           url: link,
         });
         return;
