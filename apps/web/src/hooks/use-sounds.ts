@@ -1,34 +1,52 @@
 /**
- * Lightweight sound effects using Web Audio API.
- * No audio files — just synthesised tones.
+ * Sound effects via Web Audio API — works on iOS Safari.
  *
- * iOS Safari requires AudioContext.resume() to be called inside a user gesture.
- * We register persistent listeners that call resume() on EVERY tap until it
- * transitions to "running". After that, resume() is a cheap no-op.
+ * Key insight for iOS: the AudioContext must be CREATED (not just resumed)
+ * during a user gesture. We defer creation until the first tap/click,
+ * then all subsequent sounds work automatically.
  */
 
 let ctx: AudioContext | null = null;
+let pending: Array<() => void> = [];
 
-function getCtx(): AudioContext {
+/**
+ * Get or create AudioContext. On iOS this MUST be called from
+ * a user gesture handler the first time.
+ */
+function ensureCtx(): AudioContext {
   if (!ctx) {
-    ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const AC = window.AudioContext || (window as any).webkitAudioContext;
+    ctx = new AC();
+  }
+  if (ctx.state === "suspended") {
+    ctx.resume().catch(() => {});
   }
   return ctx;
 }
 
-/** Register persistent listeners that unlock AudioContext on user interaction. */
+/**
+ * Call once at app startup. Registers a one-time gesture listener that
+ * creates + resumes the AudioContext, then plays any queued sounds.
+ */
 export function initAudio() {
-  const tryResume = () => {
-    try {
-      const c = getCtx();
-      if (c.state === "suspended") c.resume();
-    } catch { /* ignore */ }
+  const onGesture = () => {
+    const c = ensureCtx();
+    // Flush any sounds that were requested before the first gesture
+    if (c.state === "running") {
+      for (const fn of pending) fn();
+      pending = [];
+    } else {
+      c.resume().then(() => {
+        for (const fn of pending) fn();
+        pending = [];
+      }).catch(() => {});
+    }
+    // Keep listener to handle edge cases where context suspends again
   };
-  // Passive + capture: fires before anything else, doesn't block scrolling
-  document.addEventListener("touchstart", tryResume, { capture: true, passive: true });
-  document.addEventListener("touchend", tryResume, { capture: true, passive: true });
-  document.addEventListener("click", tryResume, { capture: true });
-  document.addEventListener("keydown", tryResume, { capture: true });
+
+  for (const evt of ["touchstart", "touchend", "click", "keydown"]) {
+    document.addEventListener(evt, onGesture, { capture: true, passive: true } as any);
+  }
 }
 
 function playTone(
@@ -38,31 +56,34 @@ function playTone(
   volume = 0.3,
   ramp?: { to: number },
 ) {
-  try {
-    const c = getCtx();
-    // If still suspended, schedule for after resume
-    if (c.state !== "running") {
-      c.resume()
-        .then(() => playTone(freq, duration, type, volume, ramp))
-        .catch(() => {});
-      return;
+  const doPlay = () => {
+    try {
+      const c = ensureCtx();
+      if (c.state !== "running") return;
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, c.currentTime);
+      if (ramp) {
+        osc.frequency.linearRampToValueAtTime(ramp.to, c.currentTime + duration);
+      }
+      gain.gain.setValueAtTime(volume, c.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(c.destination);
+      osc.start(c.currentTime);
+      osc.stop(c.currentTime + duration);
+    } catch {
+      // Non-critical
     }
-    const osc = c.createOscillator();
-    const gain = c.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, c.currentTime);
-    if (ramp) {
-      osc.frequency.linearRampToValueAtTime(ramp.to, c.currentTime + duration);
-    }
-    gain.gain.setValueAtTime(volume, c.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(c.destination);
-    osc.start(c.currentTime);
-    osc.stop(c.currentTime + duration);
-  } catch {
-    // Silently fail — sounds are non-critical
+  };
+
+  if (!ctx || ctx.state !== "running") {
+    // Context not ready yet — queue it for after the first gesture
+    pending.push(doPlay);
+    return;
   }
+  doPlay();
 }
 
 /** Bright double-beep — "it's your turn!" */
