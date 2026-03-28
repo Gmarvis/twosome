@@ -21,6 +21,7 @@ import { Game } from "@twosome/domain";
 import type { TurnDTO, PlayerId, RoomId } from "@twosome/shared";
 import { LogoMark } from "@/components/ui/logo-mark";
 import { LoadingIndicator } from "@/components/ui/animated-logo";
+import { LoadingButton } from "@/components/ui/loading-button";
 import {
   playYourTurn,
   playTurnReceived,
@@ -541,16 +542,15 @@ export function Play() {
             disabled={!isMyTurn || isSubmitting || isGameOver}
             maxLength={room?.gameMode === "word" ? 30 : 200}
           />
-          <button
+          <LoadingButton
             type="button"
             className="btn-sm rounded-[12px] px-[18px] py-3"
             onClick={handleSubmit}
-            disabled={
-              !isMyTurn || !input.trim() || isSubmitting || isGameOver
-            }
+            disabled={!isMyTurn || !input.trim() || isGameOver}
+            loading={isSubmitting}
           >
             ↑
-          </button>
+          </LoadingButton>
         </div>
 
         {submitError && (

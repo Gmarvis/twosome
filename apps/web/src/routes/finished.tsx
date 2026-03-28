@@ -15,6 +15,7 @@ import { formatResponseTime, formatDuration } from "@twosome/shared";
 import { analyzeStory, type StoryAnalysis } from "@/lib/gemini";
 import { RevealCard } from "@/components/games/story-builder/reveal-card";
 import { RevealLoading } from "@/components/games/story-builder/reveal-loading";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 type Tab = "story" | "reveal";
 
@@ -504,13 +505,13 @@ export function Finished() {
           <button className="btn-pop flex-1 text-[13px] py-3" onClick={handleShareStory}>
             share ↗
           </button>
-          <button
+          <LoadingButton
             className="btn-ghost flex-1 text-[13px] py-3"
             onClick={handlePlayAgain}
-            disabled={isCreatingRematch}
+            loading={isCreatingRematch}
           >
-            {isCreatingRematch ? "..." : "play again"}
-          </button>
+            play again
+          </LoadingButton>
           <button
             className="btn-ghost flex-1 text-[13px] py-3"
             onClick={handleNewGame}

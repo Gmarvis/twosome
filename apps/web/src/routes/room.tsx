@@ -22,6 +22,7 @@ import { PlayerCard } from "@/components/room/player-card";
 import { RoomShare } from "@/components/room/room-share";
 import { playPlayerJoined, playGameStart } from "@/hooks/use-sounds";
 import { LoadingIndicator } from "@/components/ui/animated-logo";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 function getStoredPlayerId(code: string): PlayerId | null {
   const val = sessionStorage.getItem(`twosome:player:${code}`);
@@ -427,13 +428,14 @@ export function Room() {
             maxLength={20}
             autoFocus
           />
-          <button
+          <LoadingButton
             className="btn-pop w-full"
             type="submit"
-            disabled={!nameInput.trim() || isJoining}
+            disabled={!nameInput.trim()}
+            loading={isJoining}
           >
-            {isJoining ? "joining..." : "join game →"}
-          </button>
+            join game →
+          </LoadingButton>
         </form>
       </div>
     );

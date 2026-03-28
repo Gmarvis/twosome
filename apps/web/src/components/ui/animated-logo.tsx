@@ -5,11 +5,12 @@
 import { motion } from "framer-motion";
 
 interface AnimatedLogoProps {
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }
 
 const sizes = {
+  xs: { box: 22, radius: 6, circle: 8 },
   sm: { box: 36, radius: 9, circle: 14 },
   md: { box: 56, radius: 14, circle: 22 },
   lg: { box: 80, radius: 20, circle: 32 },

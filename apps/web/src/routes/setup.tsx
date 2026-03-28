@@ -7,6 +7,7 @@ import { createRoomCommand, type CreateRoomPayload } from "@twosome/application"
 import type { GameMode, TimerPreset, TurnPreset } from "@twosome/shared";
 import { LogoMark } from "@/components/ui/logo-mark";
 import { Chip } from "@/components/ui/chip";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 export function Setup() {
   const navigate = useNavigate();
@@ -119,14 +120,13 @@ export function Setup() {
 
         <div className="flex-1" />
 
-        <button
+        <LoadingButton
           className="btn-main"
           onClick={handleCreate}
-          disabled={isCreating}
+          loading={isCreating}
         >
-          {isCreating ? "creating..." : "let's go"}{" "}
-          {!isCreating && <span className="text-pop ml-1.5">→</span>}
-        </button>
+          let's go <span className="text-pop ml-1.5">→</span>
+        </LoadingButton>
       </div>
     </div>
   );
